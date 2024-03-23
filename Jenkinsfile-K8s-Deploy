@@ -3,11 +3,11 @@ pipeline {
      
         environment {
         //once you create ACR in Azure cloud, use that here
-        registryName = "arunacr/python-app"
+        registryName = "arunregistry77/python-app"
         //- update your credentials ID after creating credentials for connecting to ACR
         registryCredential = 'azurecontainerregistry'
         dockerImage = ''
-        registryUrl = ''
+        registryUrl = 'arunregistry77.azurecr.io'
     }
     
     stages {
