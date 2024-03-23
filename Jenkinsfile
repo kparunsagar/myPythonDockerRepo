@@ -1,14 +1,5 @@
 pipeline {
      agent any
-     
-        environment {
-        //once you create ACR in Azure cloud, use that here
-        registryName = "arunregistry77"
-        //- update your credentials ID after creating credentials for connecting to ACR
-        registryCredential = 'azurecontainerregistry'
-        dockerImage = ''
-        registryUrl = 'arunregistry77.azurecr.io'
-    }
     
     stages {
 
@@ -17,39 +8,23 @@ pipeline {
             checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/kparunsagar/myPythonDockerRepo.git']]])
             }
         }
-       
-        stage ('Build Docker image') {
-            steps {
-                
-                script {
-                    dockerImage = docker.build registryName
-                }
+        stage('build the docker image from docker file'){
+            steps{
+                sh 'docker image build -t arunregistry77.azurecr.io/python:${BUILD_NUMBER} .'
             }
         }
-       
-    // Uploading Docker images into ACR
-    stage('Upload Image to ACR') {
-     steps{   
-         script {
-            docker.withRegistry( "http://${registryUrl}", registryCredential ) {
-            dockerImage.push()
+        stage('azure login and push the docker image to acr hub'){
+            steps{
+                withCredentials([usernamePassword(credentialsId: 'azurecontainerregistry', passwordVariable: 'password', usernameVariable: 'username')]) {
+                sh 'docker login -u ${username} -p ${password} arunregistry77.azurecr.io'
+                sh 'docker image push arunregistry77.azurecr.io/python:${BUILD_NUMBER} '
+                 }
             }
         }
-      }
-    }
-
-       // Stopping Docker containers for cleaner Docker run
-     stage('stop previous containers') {
-         steps {
-            sh 'docker ps -f name=mypythonContainer -q | xargs --no-run-if-empty docker container stop'
-            sh 'docker container ls -a -fname=mypythonContainer -q | xargs -r docker container rm'
-         }
-       }
-      
     stage('Docker Run') {
      steps{
          script {
-                sh 'docker run -d -p 8055:5000 --rm --name mypythonContainer ${registryUrl}/${registryName}'
+                sh 'docker run -d -p 8099:5001 --rm --name mypython arunregistry77.azurecr.io/petclinic:${BUILD_NUMBER}'
             }
       }
     }
