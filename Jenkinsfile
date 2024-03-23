@@ -24,7 +24,7 @@ pipeline {
     stage('Docker Run') {
      steps{
          script {
-                sh 'docker run -d -p 8099:5001 --rm --name mypython arunregistry77.azurecr.io/petclinic:${BUILD_NUMBER}'
+                sh 'docker run -d -p 8099:5001 --rm --name mypython arunregistry77.azurecr.io/python:${BUILD_NUMBER}'
             }
       }
     }
